@@ -1,0 +1,38 @@
+# Binaries
+raracandy
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Go workspace file
+go.work
+
+# Dependency directories
+vendor/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Claude Code
+.claude/
+
+# Save files (except test fixtures)
+save/
+*.sav
+*.bak
+!testdata/fixtures/*.sav
+
+# OS files
+.DS_Store
+Thumbs.db
