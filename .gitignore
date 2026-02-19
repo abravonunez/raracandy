@@ -10,12 +10,17 @@ raracandy
 
 # Output of the go coverage tool
 *.out
+coverage.html
 
 # Go workspace file
 go.work
 
 # Dependency directories
 vendor/
+
+# Build directories
+bin/
+dist/
 
 # IDE files
 .vscode/
