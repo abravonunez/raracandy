@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="img/pokemon_yellow.png" alt="Pokémon Yellow" width="400">
+</div>
+
 # raracandy 🍬
 A CLI tool to safely edit **Pokémon Gen 1** save files.
 
