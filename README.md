@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="img/pokemon_yellow.png" alt="Pokémon Yellow" width="400">
+  <img src="img/pokemon_yellow.png" alt="Pokémon Yellow" width="250">
 </div>
 
 # raracandy 🍬
