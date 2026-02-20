@@ -3,6 +3,11 @@
 </div>
 
 # raracandy 🍬
+
+[![GitHub release](https://img.shields.io/github/v/release/abravonunez/raracandy?style=flat-square)](https://github.com/abravonunez/raracandy/releases)
+[![Go Report Card](https://goreportcard.com/badge/github.com/abravonunez/raracandy?style=flat-square)](https://goreportcard.com/report/github.com/abravonunez/raracandy)
+[![License](https://img.shields.io/github/license/abravonunez/raracandy?style=flat-square)](LICENSE)
+
 A CLI tool to safely edit **Pokémon Gen 1** save files.
 
 **Goal:** Edit `.sav` files from original cartridges (add items, modify money), recalculate checksums, and write back to hardware — **without touching ROMs**.
@@ -15,15 +20,35 @@ A CLI tool to safely edit **Pokémon Gen 1** save files.
 
 **Non-goals:** ROM modification, real-time memory editing, GameShark codes, piracy
 
-## Installation & Workflow
+## Installation
+
+### Homebrew (macOS/Linux)
+
+```bash
+brew install abravonunez/tap/raracandy
+```
+
+### Download Binary
+
+Download the latest release for your platform from [GitHub Releases](https://github.com/abravonunez/raracandy/releases).
+
+### Build from Source
 
 ```bash
 git clone https://github.com/abravonunez/raracandy.git
 cd raracandy
-go build -o raracandy ./cmd/raracandy
+make build
+# Binary will be in ./bin/raracandy
 ```
 
-**Hardware workflow:**
+Or using Go directly:
+
+```bash
+go install github.com/abravonunez/raracandy/cmd/raracandy@latest
+```
+
+## Hardware Workflow
+
 1. Dump save from cartridge to `yellow.sav` (using GBxCart RW / GB Operator)
 2. Edit with raracandy → `yellow_mod.sav`
 3. Write modified save back to cartridge

@@ -1,0 +1,83 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+
+project_name: raracandy
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: raracandy
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    main: ./cmd/raracandy
+    binary: raracandy
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - formats:
+      - tar.gz
+      - zip
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+
+brews:
+  - name: raracandy
+    repository:
+      owner: abravonunez
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+      branch: "{{ .ProjectName }}-{{ .Version }}"
+      pull_request:
+        enabled: true
+        base: main
+    commit_author:
+      name: goreleaserbot
+      email: bot@goreleaser.com
+    directory: Formula
+    homepage: "https://github.com/abravonunez/raracandy"
+    description: "CLI tool to safely edit Pokémon Gen 1 save files"
+    license: "MIT"
+    skip_upload: auto
+    test: |
+      system "#{bin}/raracandy --version"
+
+nfpms:
+  - id: linux-packages
+    package_name: raracandy
+    description: "CLI tool to safely edit Pokémon Gen 1 save files"
+    maintainer: "Alex Bravo <abravonunez@users.noreply.github.com>"
+    homepage: "https://github.com/abravonunez/raracandy"
+    license: "MIT"
+    bindir: /usr/bin
+    formats:
+      - deb
+      - rpm
