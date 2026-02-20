@@ -3,10 +3,6 @@ version: 2
 
 project_name: raracandy
 
-before:
-  hooks:
-    - go mod tidy
-
 builds:
   - id: raracandy
     env:
