@@ -20,8 +20,18 @@ builds:
       - -s -w -X main.version={{.Version}}
 
 archives:
-  - formats:
+  - id: targz
+    formats:
       - tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+  - id: zip
+    formats:
       - zip
     name_template: >-
       {{ .ProjectName }}_
@@ -47,6 +57,8 @@ changelog:
 
 brews:
   - name: raracandy
+    ids:
+      - targz
     repository:
       owner: abravonunez
       name: homebrew-tap
