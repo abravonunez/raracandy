@@ -2,6 +2,8 @@ package save
 
 import (
 	"testing"
+
+	"github.com/abravonunez/raracandy/internal/gen1/profile"
 )
 
 func TestBCDConversion(t *testing.T) {
@@ -32,7 +34,10 @@ func TestChecksumCalculation(t *testing.T) {
 		data[i] = 0x01 // All bytes = 1
 	}
 
-	s := &Save{data: data}
+	s := &Save{
+		data:    data,
+		profile: profile.ProfileYellowNA,
+	}
 
 	// Calculate expected checksum
 	// Sum = (ChecksumEnd - ChecksumStart + 1) * 1
@@ -50,7 +55,10 @@ func TestChecksumCalculation(t *testing.T) {
 func TestRecalculateChecksum(t *testing.T) {
 	// Create a minimal save file
 	data := make([]byte, SaveSize)
-	s := &Save{data: data}
+	s := &Save{
+		data:    data,
+		profile: profile.ProfileYellowNA,
+	}
 
 	// Recalculate checksum
 	s.RecalculateChecksum()

@@ -3,6 +3,8 @@ package save
 import (
 	"fmt"
 	"os"
+
+	"github.com/abravonunez/raracandy/internal/gen1/profile"
 )
 
 const (
@@ -32,6 +34,7 @@ const (
 type Save struct {
 	data     []byte
 	filePath string
+	profile  *profile.GameProfile
 }
 
 // Load reads a save file from disk
@@ -45,6 +48,10 @@ func Load(path string) (*Save, error) {
 		data:     data,
 		filePath: path,
 	}
+
+	// Detect game version and assign appropriate profile
+	version := s.DetectGameVersion()
+	s.profile = profile.GetProfile(version)
 
 	// Validate the save file
 	if err := s.Validate(); err != nil {
@@ -108,4 +115,9 @@ func (s *Save) SetBytes(offset int, data []byte) error {
 	}
 	copy(s.data[offset:], data)
 	return nil
+}
+
+// GetProfile returns the GameProfile for this save file
+func (s *Save) GetProfile() *profile.GameProfile {
+	return s.profile
 }

@@ -20,13 +20,14 @@ type Item struct {
 
 // GetBagItems returns all items currently in the bag
 func GetBagItems(s *save.Save) []Item {
-	count := s.GetByte(save.OffsetBagCount)
+	profile := s.GetProfile()
+	count := s.GetByte(profile.OffsetBagCount)
 	if count > MaxBagItems {
 		count = MaxBagItems
 	}
 
 	items := make([]Item, 0, count)
-	offset := save.OffsetBagItems
+	offset := profile.OffsetBagItems
 
 	for i := byte(0); i < count; i++ {
 		id := s.GetByte(offset)
@@ -47,8 +48,9 @@ func GetBagItems(s *save.Save) []Item {
 // FindItemIndex finds the index of an item in the bag by ID
 // Returns -1 if not found
 func FindItemIndex(s *save.Save, itemID byte) int {
-	count := s.GetByte(save.OffsetBagCount)
-	offset := save.OffsetBagItems
+	profile := s.GetProfile()
+	count := s.GetByte(profile.OffsetBagCount)
+	offset := profile.OffsetBagItems
 
 	for i := byte(0); i < count; i++ {
 		id := s.GetByte(offset)
@@ -73,7 +75,8 @@ func SetItemQuantity(s *save.Save, itemID byte, quantity byte) error {
 
 	if idx >= 0 {
 		// Item exists, update quantity
-		offset := save.OffsetBagItems + (idx * 2) + 1
+		profile := s.GetProfile()
+		offset := profile.OffsetBagItems + (idx * 2) + 1
 		return s.SetByte(offset, quantity)
 	}
 
@@ -87,14 +90,15 @@ func AddItem(s *save.Save, itemID byte, quantity byte) error {
 		return fmt.Errorf("quantity %d exceeds maximum %d", quantity, MaxItemQty)
 	}
 
-	count := s.GetByte(save.OffsetBagCount)
+	profile := s.GetProfile()
+	count := s.GetByte(profile.OffsetBagCount)
 
 	if count >= MaxBagItems {
 		return fmt.Errorf("bag is full (max %d items)", MaxBagItems)
 	}
 
 	// Calculate offset for new item (after last item)
-	offset := save.OffsetBagItems + (int(count) * 2)
+	offset := profile.OffsetBagItems + (int(count) * 2)
 
 	// Set item ID and quantity
 	if err := s.SetByte(offset, itemID); err != nil {
@@ -105,7 +109,7 @@ func AddItem(s *save.Save, itemID byte, quantity byte) error {
 	}
 
 	// Increment bag count
-	if err := s.SetByte(save.OffsetBagCount, count+1); err != nil {
+	if err := s.SetByte(profile.OffsetBagCount, count+1); err != nil {
 		return fmt.Errorf("failed to update bag count: %w", err)
 	}
 
@@ -124,12 +128,13 @@ func RemoveItem(s *save.Save, itemID byte) error {
 		return fmt.Errorf("item not found in bag")
 	}
 
-	count := s.GetByte(save.OffsetBagCount)
+	profile := s.GetProfile()
+	count := s.GetByte(profile.OffsetBagCount)
 
 	// Shift all items after the removed one
 	for i := idx; i < int(count)-1; i++ {
-		srcOffset := save.OffsetBagItems + ((i + 1) * 2)
-		dstOffset := save.OffsetBagItems + (i * 2)
+		srcOffset := profile.OffsetBagItems + ((i + 1) * 2)
+		dstOffset := profile.OffsetBagItems + (i * 2)
 
 		id := s.GetByte(srcOffset)
 		qty := s.GetByte(srcOffset + 1)
@@ -139,10 +144,10 @@ func RemoveItem(s *save.Save, itemID byte) error {
 	}
 
 	// Decrement count
-	s.SetByte(save.OffsetBagCount, count-1)
+	s.SetByte(profile.OffsetBagCount, count-1)
 
 	// Add terminator at new end
-	terminatorOffset := save.OffsetBagItems + (int(count-1) * 2)
+	terminatorOffset := profile.OffsetBagItems + (int(count-1) * 2)
 	s.SetByte(terminatorOffset, 0xFF)
 
 	return nil

@@ -5,7 +5,8 @@ package save
 func (s *Save) CalculateChecksum() byte {
 	var sum byte = 0
 
-	for i := ChecksumStart; i <= ChecksumEnd; i++ {
+	profile := s.GetProfile()
+	for i := profile.ChecksumStart; i <= profile.ChecksumEnd; i++ {
 		sum += s.GetByte(i)
 	}
 
@@ -16,10 +17,12 @@ func (s *Save) CalculateChecksum() byte {
 // RecalculateChecksum updates the checksum in the save data
 func (s *Save) RecalculateChecksum() {
 	checksum := s.CalculateChecksum()
-	s.SetByte(OffsetChecksum, checksum)
+	profile := s.GetProfile()
+	s.SetByte(profile.OffsetChecksum, checksum)
 }
 
 // GetChecksum returns the currently stored checksum
 func (s *Save) GetChecksum() byte {
-	return s.GetByte(OffsetChecksum)
+	profile := s.GetProfile()
+	return s.GetByte(profile.OffsetChecksum)
 }

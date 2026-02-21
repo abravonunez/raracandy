@@ -13,7 +13,8 @@ const (
 // GetMoney reads and decodes the player's money from the save file
 // Money is stored as 3 bytes in BCD (Binary-Coded Decimal) format
 func GetMoney(s *save.Save) uint32 {
-	bytes := s.GetBytes(save.OffsetMoney, 3)
+	profile := s.GetProfile()
+	bytes := s.GetBytes(profile.OffsetMoney, 3)
 	if bytes == nil || len(bytes) != 3 {
 		return 0
 	}
@@ -40,7 +41,8 @@ func SetMoney(s *save.Save, amount uint32) error {
 	bytes[1] = decimalToBCD(byte((amount / 100) % 100)) // Hundreds and tens
 	bytes[2] = decimalToBCD(byte(amount % 100))        // Units
 
-	return s.SetBytes(save.OffsetMoney, bytes)
+	profile := s.GetProfile()
+	return s.SetBytes(profile.OffsetMoney, bytes)
 }
 
 // bcdToDecimal converts a BCD byte to decimal
