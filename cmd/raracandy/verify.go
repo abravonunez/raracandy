@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/abravonunez/raracandy/internal/gen1/profile"
 	"github.com/abravonunez/raracandy/internal/gen1/save"
 	"github.com/spf13/cobra"
 )
@@ -50,7 +51,7 @@ func runVerify(cmd *cobra.Command, args []string) error {
 
 	// Game version
 	fmt.Printf("Detected Version: %s\n", report.GameVersion)
-	if report.GameVersion == save.VersionUnknown {
+	if report.GameVersion == profile.VersionUnknown {
 		fmt.Println("  ⚠️  Warning: Unknown version - offsets may be incorrect")
 	}
 	fmt.Println()
