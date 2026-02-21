@@ -13,10 +13,10 @@ A CLI tool to safely edit **Pokémon Gen 1** save files.
 **Goal:** Edit `.sav` files from original cartridges (add items, modify money), recalculate checksums, and write back to hardware — **without touching ROMs**.
 
 ## Overview
-**Supported:** Pokémon Yellow (Gen 1)
-**Planned:** Red/Blue, PC items, party editor
+**Supported:** Pokémon Red, Blue, Yellow (Gen 1 NA)
+**Planned:** PC items, party editor
 
-**Features:** ✓ Bag items • ✓ Money • ✓ Save validation • ✓ Checksum recalculation
+**Features:** ✓ Bag items • ✓ Money • ✓ Save validation • ✓ Checksum recalculation • ✓ Auto version detection
 
 **Non-goals:** ROM modification, real-time memory editing, GameShark codes, piracy
 
@@ -58,27 +58,27 @@ go install github.com/abravonunez/raracandy/cmd/raracandy@latest
 
 ```bash
 # Verify save integrity (recommended first)
-raracandy yellow verify pokemon_yellow.sav
+raracandy verify pokemon.sav
 
 # Inspect save contents
-raracandy yellow inspect pokemon_yellow.sav
+raracandy inspect pokemon.sav
 
 # Add single item
-raracandy yellow add-item pokemon_yellow.sav \
+raracandy add-item pokemon.sav \
   --item rare_candy --qty 99 --out modified.sav
 
 # Add multiple items (batch mode - atomic, faster)
-raracandy yellow add-items pokemon_yellow.sav \
+raracandy add-items pokemon.sav \
   --item rare_candy --qty 99 \
   --item master_ball --qty 50 \
   --out modified.sav
 
 # Set money
-raracandy yellow set-money pokemon_yellow.sav \
+raracandy set-money pokemon.sav \
   --amount 999999 --out modified.sav
 
 # Preview changes (any command)
-raracandy yellow add-item pokemon_yellow.sav \
+raracandy add-item pokemon.sav \
   --item rare_candy --qty 99 --out modified.sav --dry-run
 ```
 
@@ -102,9 +102,10 @@ raracandy yellow add-item pokemon_yellow.sav \
 **Save Format:** 32 KB (4 banks × 8 KB), main data at 0x2000-0x3FFF
 **Checksum:** 1 byte at 0x3523 (sum of 0x2598-0x3522, bitwise NOT)
 
-**Key Offsets (Pokémon Yellow NA):**
+**Key Offsets (Gen 1 NA):**
 - Bag: 0x25C9-0x25E1 (count + 20 items)
 - Money: 0x25F3 (3 bytes, BCD encoded)
+- Note: Red/Blue/Yellow share the same offsets
 
 **References:** [Bulbapedia](https://bulbapedia.bulbagarden.net/wiki/Save_data_structure_(Generation_I)) • [Data Crystal](https://datacrystal.tcrf.net/wiki/Pokémon_Yellow/RAM_map)
 
