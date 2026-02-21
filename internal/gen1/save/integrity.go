@@ -3,40 +3,16 @@ package save
 import (
 	"crypto/sha256"
 	"fmt"
+
+	"github.com/abravonunez/raracandy/internal/gen1/profile"
 )
-
-// GameVersion represents the detected game version
-type GameVersion int
-
-const (
-	VersionUnknown GameVersion = iota
-	VersionYellowNA
-	VersionYellowJP
-	VersionYellowEU
-	VersionRedBlueNA
-)
-
-func (v GameVersion) String() string {
-	switch v {
-	case VersionYellowNA:
-		return "Pokémon Yellow (North America)"
-	case VersionYellowJP:
-		return "Pokémon Yellow (Japan)"
-	case VersionYellowEU:
-		return "Pokémon Yellow (Europe)"
-	case VersionRedBlueNA:
-		return "Pokémon Red/Blue (North America)"
-	default:
-		return "Unknown"
-	}
-}
 
 // IntegrityReport contains the results of integrity checks
 type IntegrityReport struct {
 	IsValid       bool
 	Errors        []string
 	Warnings      []string
-	GameVersion   GameVersion
+	GameVersion   profile.GameVersion
 	ChecksumValid bool
 	BagValid      bool
 	MoneyValid    bool
@@ -59,9 +35,10 @@ func (s *Save) CheckIntegrity() IntegrityReport {
 	}
 
 	// 2. Bag count validation
-	bagCount := s.GetByte(OffsetBagCount)
-	if bagCount > MaxBagItems {
-		report.Errors = append(report.Errors, fmt.Sprintf("Bag count %d exceeds maximum %d", bagCount, MaxBagItems))
+	prof := s.GetProfile()
+	bagCount := s.GetByte(prof.OffsetBagCount)
+	if bagCount > byte(prof.MaxBagItems) {
+		report.Errors = append(report.Errors, fmt.Sprintf("Bag count %d exceeds maximum %d", bagCount, prof.MaxBagItems))
 		report.IsValid = false
 		report.BagValid = false
 	} else {
@@ -69,8 +46,8 @@ func (s *Save) CheckIntegrity() IntegrityReport {
 	}
 
 	// 3. Bag terminator check (should be 0xFF after last item)
-	if bagCount < MaxBagItems {
-		terminatorOffset := OffsetBagItems + (int(bagCount) * 2)
+	if bagCount < byte(prof.MaxBagItems) {
+		terminatorOffset := prof.OffsetBagItems + (int(bagCount) * 2)
 		terminator := s.GetByte(terminatorOffset)
 		if terminator != 0xFF {
 			report.Warnings = append(report.Warnings, "Missing bag terminator byte (0xFF)")
@@ -80,7 +57,7 @@ func (s *Save) CheckIntegrity() IntegrityReport {
 	// 4. Money validation (checked via money package)
 	// Money is stored in BCD, so we check if the bytes are valid BCD
 	report.MoneyValid = true // Assume valid until proven otherwise
-	moneyBytes := s.GetBytes(OffsetMoney, 3)
+	moneyBytes := s.GetBytes(prof.OffsetMoney, 3)
 	if moneyBytes != nil {
 		for i, b := range moneyBytes {
 			high := (b >> 4) & 0x0F
@@ -94,7 +71,7 @@ func (s *Save) CheckIntegrity() IntegrityReport {
 	}
 
 	// 5. Version-specific checks
-	if report.GameVersion == VersionUnknown {
+	if report.GameVersion == profile.VersionUnknown {
 		report.Warnings = append(report.Warnings, "Could not detect game version - offsets may be incorrect")
 	}
 
@@ -102,24 +79,59 @@ func (s *Save) CheckIntegrity() IntegrityReport {
 }
 
 // DetectGameVersion attempts to identify the game version
-func (s *Save) DetectGameVersion() GameVersion {
-	// For now, we assume Yellow NA based on checksum location
-	// Future: implement more sophisticated detection
+// This uses hardcoded NA offsets for detection since all NA versions share the same offsets
+func (s *Save) DetectGameVersion() profile.GameVersion {
+	// Constants for NA version detection (same for Red/Blue/Yellow NA)
+	const (
+		naOffsetChecksum = 0x3523
+		naChecksumStart  = 0x2598
+		naChecksumEnd    = 0x3522
+		naOffsetBagCount = 0x25C9
+		naOffsetMoney    = 0x25F3
+	)
 
-	// Simple heuristic: check if checksum is at the expected offset
-	if s.ValidateChecksum() {
-		// Checksum is valid at 0x3523, likely Yellow NA
-		return VersionYellowNA
+	// 1. Validate checksum at NA offset
+	var sum byte = 0
+	for i := naChecksumStart; i <= naChecksumEnd; i++ {
+		sum += s.GetByte(i)
+	}
+	calculatedChecksum := ^sum
+	storedChecksum := s.GetByte(naOffsetChecksum)
+
+	checksumValid := (calculatedChecksum == storedChecksum)
+
+	// 2. Validate bag structure
+	bagCount := s.GetByte(naOffsetBagCount)
+	bagValid := bagCount <= 20
+
+	// 3. Validate money (BCD format)
+	moneyValid := true
+	moneyBytes := s.GetBytes(naOffsetMoney, 3)
+	if moneyBytes != nil {
+		for _, b := range moneyBytes {
+			high := (b >> 4) & 0x0F
+			low := b & 0x0F
+			if high > 9 || low > 9 {
+				moneyValid = false
+				break
+			}
+		}
 	}
 
-	// Check if it looks like a Yellow save by validating structure
-	bagCount := s.GetByte(OffsetBagCount)
-	if bagCount <= MaxBagItems {
-		// Bag count is reasonable, likely Yellow NA
-		return VersionYellowNA
+	// If checksum is valid and structure looks good, it's a NA version
+	if checksumValid && bagValid && moneyValid {
+		// Default to Yellow NA since offsets are identical for Red/Blue/Yellow NA
+		// Future: could differentiate by checking for Pikachu-specific data
+		return profile.VersionYellowNA
 	}
 
-	return VersionUnknown
+	// If structure looks reasonable but checksum is invalid, still assume NA
+	// (checksum might be invalid for legitimate reasons, e.g., corrupted save)
+	if bagValid && moneyValid {
+		return profile.VersionYellowNA
+	}
+
+	return profile.VersionUnknown
 }
 
 // GetSHA256 returns the SHA256 hash of the save data
