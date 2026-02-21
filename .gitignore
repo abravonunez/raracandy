@@ -38,6 +38,9 @@ save/
 *.bak
 !testdata/fixtures/*.sav
 
+# Test ROMs directory (for personal save file testing)
+test_rom/
+
 # OS files
 .DS_Store
 Thumbs.db
