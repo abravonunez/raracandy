@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1](https://github.com/abravonunez/raracandy/compare/v1.2.0...v1.2.1) (2026-02-23)
+
+
+### Bug Fixes
+
+* change Homebrew test to use --help instead of --version ([aec6b79](https://github.com/abravonunez/raracandy/commit/aec6b7979985e925a6ac8f5a32cb453fcc3036d0))
+
 ## [1.2.0](https://github.com/abravonunez/raracandy/compare/v1.1.1...v1.2.0) (2026-02-21)
 
 
