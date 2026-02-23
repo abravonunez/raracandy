@@ -76,7 +76,7 @@ brews:
     license: "MIT"
     skip_upload: auto
     test: |
-      system "#{bin}/raracandy --version"
+      system "#{bin}/raracandy --help"
 
 nfpms:
   - id: linux-packages
